@@ -1,8 +1,4 @@
 import logging
-from html import escape
-
-
-__all__ = ("MarkdownFormatter", "HTMLFormatter")
 
 
 class BaseFormatter(logging.Formatter):
@@ -50,28 +46,9 @@ class MarkdownFormatter(BaseFormatter):
     Markdown formatter for telegram
     """
 
-    FMT = """*%(levelname)s*\n_%(name)s:%(funcName)s_
+    FMT = """*%(asctime)s - %(levelname)s*\n_%(filename)s:%(lineno)d:%(funcName)s_
     ``` %(message)s ``` %(exc)s
     """
 
     BLOCK_OPEN = BLOCK_CLOSE = "```"
     MODE = "markdown"
-
-
-class HTMLFormatter(BaseFormatter):
-    FMT = """<b>%(levelname)s</b>\n<i>%(name)s:%(funcName)s</i>
-    <pre>%(message)s</pre> %(exc)s
-    """
-
-    BLOCK_OPEN = "<pre>"
-    BLOCK_CLOSE = "</pre>"
-    MODE = "html"
-
-    def format(self, record):
-        """
-        Properly escape all the string values of message
-        """
-        for key, value in record.__dict__.items():
-            if isinstance(value, str):
-                setattr(record, key, escape(value))
-        return super().format(record)

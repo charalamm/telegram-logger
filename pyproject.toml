@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools", "requests"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telegram-logger"
+version = "1.3"
+description = "Simple telegram logger"
+authors = [
+  { name="Dmytro Smyk", email="sharon.fitzpatrick23@gmail.com" }
+]
+maintainers = [
+  { name="charalmm" }
+]
+requires-python = ">=3.5"
+license = { file="LICENSE" }
+classifiers=[
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"]}
+
+[project.urls]
+"Homepage" = "https://github.com/charalamm/telegram-logger"

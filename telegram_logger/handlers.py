@@ -1,65 +1,15 @@
 import logging.handlers
+import requests
 import time
+
 from queue import Queue
 
-import requests
-
-from .formatters import HTMLFormatter, MarkdownFormatter
-
-
-__all__ = ("Handler",)
-
-
-HTML = "html"
-MARKDOWN = "markdown"
-
-FORMATTERS = {
-    HTML: HTMLFormatter,
-    MARKDOWN: MarkdownFormatter
-}
 
 logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
-class Handler(logging.handlers.QueueHandler):
-
-    """
-    Base handler which instantiate and start queue listener and message dispatcher
-    """
-
-    def __init__(self, token: str, chat_ids: list, format: str=HTML,
-                 disable_notifications: bool=False, disable_preview: bool=False):
-        """
-        :param token: telegram bot API token
-        :param chat_ids: list of intergers with chat ids
-        :param format: message format. Either 'html' or 'markdown'
-        :param disable_notifications: enable/disable bot notifications
-        :param disable_preview: enable/disable web-pages preview
-        """
-        queue = Queue()
-        super().__init__(queue)
-
-        try:
-            formatter = FORMATTERS[format.lower()]
-        except Exception:
-            raise Exception("TelegramLogging. Unknown format '%s'" % format)
-
-        self.handler = LogMessageDispatcher(token, chat_ids, disable_notifications, disable_preview)
-        self.handler.setFormatter(formatter())
-        listener = logging.handlers.QueueListener(queue, self.handler)
-        listener.start()
-
-    def prepare(self, record):
-        return record
-
-    def setFormatter(self, fmt):
-        """
-        Since we use underlying thread-based handler - we need to set a formatter to it
-        """
-        self.handler.formatter = fmt
-
-
-class LogMessageDispatcher(logging.Handler):
+class TelegramHandler(logging.handlers.QueueHandler):
     """
     Separate thread for a message dispatching
     """
@@ -72,16 +22,17 @@ class LogMessageDispatcher(logging.Handler):
         See Handler args
         """
         self.token = token
-        self.chat_ids = chat_ids
+        self.chat_ids = [int(chat_id) for chat_id in chat_ids]
         self.disable_notifications = disable_notifications
         self.disable_preview = disable_preview
         self.session = requests.Session()
-        super().__init__()
+
+        queue = Queue()
+        super().__init__(queue)
 
     @property
     def url(self):
-        return "https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={text}&parse_mode={mode}&" \
-               "disable_web_page_preview={disable_web_page_preview}&disable_notifications={disable_notifications}"
+        return "https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={text}&parse_mode={mode}"
 
     def handle(self, record):
         """

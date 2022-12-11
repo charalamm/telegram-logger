@@ -1,11 +1,7 @@
-Project is no longer maintaned.
-===============================
-
 =====
 Python Telegram Logger
 =====
-
-Simple logger which dispatch messages to a telegram in markdown format.
+Simple logger which dispatch messages to telegram in markdown format.
 Uses a separate thread for a dispatching.
 Support many chats.
 Support big messages (over 4096 chars).
@@ -14,82 +10,46 @@ Support telegram API calls restrictions.
 
 Installation
 -----------
+Install with::
 
-.. code-block::
-pip install python-telegram-logger
+    pip install git+https://github.com/charalamm/telegram-logger
 
 
 Quick start
 -----------
+1. Crate a telegram bot and get the access token, aka `ACCESS_TOKEN_HTTP_API`
 
-1. Configure logger with dict config:
+2. Through the telegram app create a group and put yourself and and the bot as members. Then get the chat group id, aka `GROUP_CHAT_ID`. The group chat id is one of the negative integers::
 
-.. code-block:: python
-
-    config = {
-        ...
-        "version": 1,
-        "disable_existing_loggers": False,
-        "handlers": {
-            "telegram": {
-                "class": "python_telegram_logger.Handler",
-                "token": "bot_token",
-                "chat_ids": [123456789, -1234567891011],
-
-            }
-        },
-        "loggers": {
-            "tg": {
-                "level": "INFO",
-                "handlers": ["telegram",]
-            }
-        }
-    }
+    import requests
+    url = f"https://api.telegram.org/bot{ACCESS_TOKEN_HTTP_API}/getUpdates"
+    print(requests.get(url).json())
 
 
-2. Use it!
-
-.. code-block:: python
+3. Create a configuration file that defines the logger::
 
     import logging
-    logger = logging.getLogger("tg")
 
-    logger.info("test")
+    from python_telegram_logger import TelegramHandler, MarkdownFormatter
 
+    # Logging
+    logger = logging.getLogger('')
+    logger.setLevel(logging.DEBUG)
+
+    th = TelegramHandler(<ACCESS_TOKEN_HTTP_API>, [<GROUP_CHAT_ID>])
+    th.setLevel(logging.ERROR)
+    th.setFormatter(MarkdownFormatter())
+    logger.addHandler(th)
+
+
+4. Create another file that uses the logger::
+
+    from configuration import logger
+
+    def main():
     try:
-        raise Exception("raise!")
+    raise Exception("some exception")
     except Exception:
-        logger.exception("catch!")
+    logger.exception("catch!")
 
-
-3. Formatting:
-
-- Configure a formatter using dict config, example:
-
-.. code-block:: python
-
-    config = {
-        ...
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "default": {
-                "()": "python_telegram_logger.MarkdownFormatter",
-                "fmt": " *%(levelname)s* _%(name)s : %(funcName)s_"
-            }
-        },
-        "handlers": {
-            "telegram": {
-                "class": "python_telegram_logger.Handler",
-                "token": "bot_token",
-                "chat_ids": [123456789, -1234567891011],
-                "formatter": "default"
-            }
-        },
-        "loggers": {
-            "tg": {
-                "level": "INFO",
-                "handlers": ["telegram",]
-            }
-        }
-    }
+    main()
