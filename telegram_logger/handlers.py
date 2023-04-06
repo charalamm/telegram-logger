@@ -17,7 +17,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
     MAX_MSG_LEN = 4096
     API_CALL_INTERVAL = 1 / 30  # 30 calls per second
 
-    def __init__(self, token: str, chat_ids: list, disable_notifications: bool=False, disable_preview: bool=False):
+    def __init__(self, token: str, chat_ids: list, disable_notifications: bool=False, disable_preview: bool=False, mode: str="markdown"):
         """
         See Handler args
         """
@@ -26,6 +26,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
         self.disable_notifications = disable_notifications
         self.disable_preview = disable_preview
         self.session = requests.Session()
+        self.mode = mode
 
         queue = Queue()
         super().__init__(queue)
@@ -64,7 +65,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
             url = self.url.format(
                 token=self.token,
                 chat_id=chat_id,
-                mode=self.formatter.MODE,
+                mode=self.mode,
                 text=record,
                 disable_web_page_preview=self.disable_preview,
                 disable_notifications=self.disable_notifications
