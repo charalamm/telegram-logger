@@ -17,7 +17,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
     MAX_MSG_LEN = 4096
     API_CALL_INTERVAL = 1 / 30  # 30 calls per second
     START_CODE_BLOCK = END_CODE_BLOCK = "```"
-    MODE = "markdown"
+    MODE = "MarkdownV2"
 
     def __init__(self, token: str, chat_ids: list, disable_notifications: bool=False, disable_preview: bool=False):
         """
