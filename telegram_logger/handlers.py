@@ -46,20 +46,18 @@ class TelegramHandler(logging.handlers.QueueHandler):
 
             # telegram max length of text is 4096 chars, we need to split our text into chunks
 
-            start_chars, end_chars = "", self.END_CODE_BLOCK
-            start_idx, end_idx = 0, self.MAX_MSG_LEN - len(end_chars)  # don't forget about markdown symbols (```)
+            start_idx, end_idx = 0, self.MAX_MSG_LEN - len(self.END_CODE_BLOCK)
             new_record = record[start_idx:end_idx]
 
             while new_record:
                 # remove whitespaces, markdown fmt symbols and a carriage return
-                new_record = start_chars + new_record.rstrip("` \n") + end_chars
+                new_record = self.START_CODE_BLOCK + new_record + self.END_CODE_BLOCK
                 self.emit(new_record)
 
-                start_chars, end_chars = self.START_CODE_BLOCK, self.END_CODE_BLOCK
-                start_idx, end_idx = end_idx, end_idx + self.MAX_MSG_LEN - (len(start_chars) + len(end_chars))
+                start_idx, end_idx = end_idx, end_idx + self.MAX_MSG_LEN - (len(self.START_CODE_BLOCK) + len(self.END_CODE_BLOCK))
                 new_record = record[start_idx:end_idx]
         else:
-            self.emit(record)
+            self.emit(self.START_CODE_BLOCK + record + self.END_CODE_BLOCK)
 
     def emit(self, record):
         for chat_id in self.chat_ids:
