@@ -16,8 +16,10 @@ class TelegramHandler(logging.handlers.QueueHandler):
     TIMEOUT = 13  # seconds
     MAX_MSG_LEN = 4096
     API_CALL_INTERVAL = 1 / 30  # 30 calls per second
+    START_CODE_BLOCK = END_CODE_BLOCK = "```"
+    MODE = "markdown"
 
-    def __init__(self, token: str, chat_ids: list, disable_notifications: bool=False, disable_preview: bool=False, mode: str="markdown"):
+    def __init__(self, token: str, chat_ids: list, disable_notifications: bool=False, disable_preview: bool=False):
         """
         See Handler args
         """
@@ -26,7 +28,6 @@ class TelegramHandler(logging.handlers.QueueHandler):
         self.disable_notifications = disable_notifications
         self.disable_preview = disable_preview
         self.session = requests.Session()
-        self.mode = mode
 
         queue = Queue()
         super().__init__(queue)
@@ -45,7 +46,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
 
             # telegram max length of text is 4096 chars, we need to split our text into chunks
 
-            start_chars, end_chars = "", self.formatter.END_CODE_BLOCK
+            start_chars, end_chars = "", self.END_CODE_BLOCK
             start_idx, end_idx = 0, self.MAX_MSG_LEN - len(end_chars)  # don't forget about markdown symbols (```)
             new_record = record[start_idx:end_idx]
 
@@ -54,7 +55,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
                 new_record = start_chars + new_record.rstrip("` \n") + end_chars
                 self.emit(new_record)
 
-                start_chars, end_chars = self.formatter.START_CODE_BLOCK, self.formatter.END_CODE_BLOCK
+                start_chars, end_chars = self.START_CODE_BLOCK, self.END_CODE_BLOCK
                 start_idx, end_idx = end_idx, end_idx + self.MAX_MSG_LEN - (len(start_chars) + len(end_chars))
                 new_record = record[start_idx:end_idx]
         else:
@@ -65,7 +66,7 @@ class TelegramHandler(logging.handlers.QueueHandler):
             url = self.url.format(
                 token=self.token,
                 chat_id=chat_id,
-                mode=self.mode,
+                mode=self.MODE,
                 text=record,
                 disable_web_page_preview=self.disable_preview,
                 disable_notifications=self.disable_notifications
